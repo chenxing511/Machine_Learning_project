@@ -9,6 +9,7 @@ import networkx as nx
 import random
 import numpy as np
 from collections import Counter
+from torch_geometric.datasets import Planetoid
 
 dataset = Planetoid(root='/tmp/Cora', name='Cora')
 graph = dataset[0]
