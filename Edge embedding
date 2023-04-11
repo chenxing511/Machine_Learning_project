@@ -1,0 +1,71 @@
+import random
+import networkx as nx
+import numpy as np
+import matplotlib.pyplot as plt
+
+from node2vec import Node2Vec
+from node2vec.edges import HadamardEmbedder
+G = nx.Graph()
+G.add_node('A')
+G.add_node('B')
+G.add_node('C')
+G.add_node('D')
+G.add_node('E')
+G.add_edge('A','C')
+G.add_edge('A','E')
+G.add_edge('B','D')
+G.add_edge('D','E')
+G.add_edge('C','B')
+G.add_edge('E','B')
+nx.draw(G,with_labels=True,node_color='Red')
+plt.show()
+L = nx.line_graph(G,create_using=None)
+nx.draw(L,with_labels=True,node_color='Red')
+plt.show()
+# node embeddings
+def run_n2v(G, dimensions=64, walk_length=80, num_walks=10, p=10, q=0.1, window=10):
+    mdl = Node2Vec(
+        G,
+        dimensions=dimensions,
+        walk_length=walk_length,
+        num_walks=num_walks,
+        p=p,
+        q=q
+    )
+    mdl = mdl.fit(window=window)
+    return mdl
+mdl = run_n2v(G)
+x_coord1 = [mdl.wv.get_vector(str(x))[0] for x in G.nodes()]
+y_coord1 = [mdl.wv.get_vector(str(x))[1] for x in G.nodes()]
+
+plt.clf()
+plt.scatter(x_coord1, y_coord1)
+plt.xlabel("Dimension 1")
+plt.ylabel("Dimension 2")
+plt.title("2 Dimensional Representation of Node2Vec Algorithm on Sample Network")
+plt.show()
+edges_embs = HadamardEmbedder(
+    keyed_vectors=mdl.wv
+)
+
+# visualize embeddings
+coordinates = [
+    edges_embs[(str(x[0]), str(x[1]))] for x in G.edges()
+]
+
+plt.clf()
+plt.scatter(coordinates[0], coordinates[1])
+plt.xlabel("Dimension 1")
+plt.ylabel("Dimension 2")
+plt.title("2 Dimensional Representation of Edge Embeddings on Sample Network")
+plt.show()
+mdl_edge = run_n2v(L)
+x_coord2 = [mdl_edge.wv.get_vector(str(y))[0] for y in L.nodes()]
+y_coord2 = [mdl_edge.wv.get_vector(str(y))[1] for y in L.nodes()]
+
+plt.clf()
+plt.scatter(x_coord2, y_coord2)
+plt.xlabel("Dimension 1")
+plt.ylabel("Dimension 2")
+plt.title("2 Dimensional Representation of Node2Vec Algorithm on Sample line graph Network")
+plt.show()
